@@ -1,21 +1,21 @@
 package com.example.myapplication;
 
+import android.Manifest;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.Toast;
-import android.Manifest;
-import android.content.pm.PackageManager;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -31,11 +31,14 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Request permissions if not already granted
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         }
-        super.onCreate(savedInstanceState);
+
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -44,8 +47,16 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
+        // Button to open the gallery and select media
         Button uploadButton = findViewById(R.id.button_upload);
         uploadButton.setOnClickListener(v -> openGallery());
+
+        // Button to view saved media
+        Button viewButton = findViewById(R.id.button_view);
+        viewButton.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, SavedMediaActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void openGallery() {
@@ -85,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
             outputStream.close();
             inputStream.close();
 
-            Toast.makeText(this, "Filed saved to Secure Directory", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Media saved successfully", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             Toast.makeText(this, "Failed to save media", Toast.LENGTH_SHORT).show();
             e.printStackTrace();

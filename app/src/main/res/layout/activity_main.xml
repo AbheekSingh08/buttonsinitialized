@@ -61,7 +61,7 @@
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="16dp"
         android:backgroundTint="#000000"
-        android:text="Go to Saved Directory"
+        android:text="Go to Secured Directory"
         android:textColor="#FFFFFF"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
