@@ -1,18 +1,21 @@
 package com.example.myapplication;
 
-import android.content.ContentResolver;
-import android.content.Intent;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.webkit.MimeTypeMap;
-import android.widget.AdapterView;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -20,8 +23,8 @@ import java.util.ArrayList;
 public class SavedMediaActivity extends AppCompatActivity {
 
     private ListView listView;
-    private ArrayList<String> mediaList;
-    private ArrayAdapter<String> adapter;
+    private ArrayList<File> mediaFiles;
+    private MediaAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,70 +32,66 @@ public class SavedMediaActivity extends AppCompatActivity {
         setContentView(R.layout.activity_saved_media);
 
         listView = findViewById(R.id.listView);
-        mediaList = new ArrayList<>();
+        mediaFiles = getSavedMediaFiles();
 
-        File appDir = new File(getFilesDir(), "saved_media");
-        if (appDir.exists()) {
-            File[] files = appDir.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    mediaList.add(file.getName());
-                }
-            }
-        }
-
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mediaList);
+        adapter = new MediaAdapter(this, mediaFiles);
         listView.setAdapter(adapter);
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String selectedMedia = mediaList.get(position);
-                File mediaFile = new File(appDir, selectedMedia);
-                Uri uri = FileProvider.getUriForFile(SavedMediaActivity.this, "com.example.myapplication.fileprovider", mediaFile);
-
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                String mimeType = getMimeType(uri);
-                intent.setDataAndType(uri, mimeType);
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                try {
-                    startActivity(intent);
-                } catch (Exception e) {
-                    Toast.makeText(SavedMediaActivity.this, "No suitable app to open this file", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                String selectedMedia = mediaList.get(position);
-                File mediaFile = new File(appDir, selectedMedia);
-                if (mediaFile.delete()) {
-                    mediaList.remove(position);
-                    adapter.notifyDataSetChanged();
-                    Toast.makeText(SavedMediaActivity.this, "Media deleted successfully", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(SavedMediaActivity.this, "Failed to delete media", Toast.LENGTH_SHORT).show();
-                }
-                return true;
-            }
-        });
     }
 
-    private String getMimeType(Uri uri) {
-        String extension = getFileExtension(uri);
-        return extension != null ? MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) : "application/octet-stream";
-    }
-
-    private String getFileExtension(Uri uri) {
-        String extension;
-        if (uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
-            MimeTypeMap mime = MimeTypeMap.getSingleton();
-            extension = mime.getExtensionFromMimeType(getContentResolver().getType(uri));
-        } else {
-            extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(new File(uri.getPath())).toString());
+    private ArrayList<File> getSavedMediaFiles() {
+        ArrayList<File> files = new ArrayList<>();
+        File appDir = new File(getFilesDir(), "saved_media");
+        if (appDir.exists() && appDir.isDirectory()) {
+            for (File file : appDir.listFiles()) {
+                files.add(file);
+            }
         }
-        return extension;
+        return files;
+    }
+
+    private class MediaAdapter extends ArrayAdapter<File> {
+
+        private Context context;
+        private ArrayList<File> files;
+
+        public MediaAdapter(Context context, ArrayList<File> files) {
+            super(context, 0, files);
+            this.context = context;
+            this.files = files;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            if (convertView == null) {
+                convertView = LayoutInflater.from(context).inflate(R.layout.media_item, parent, false);
+            }
+
+            File file = files.get(position);
+            TextView fileName = convertView.findViewById(R.id.file_name);
+            ImageView thumbnail = convertView.findViewById(R.id.thumbnail);
+            Button deleteButton = convertView.findViewById(R.id.button_delete);
+
+            fileName.setText(file.getName());
+            thumbnail.setImageURI(Uri.fromFile(file));
+
+            deleteButton.setOnClickListener(v -> {
+                new AlertDialog.Builder(context)
+                        .setTitle("Delete Confirmation")
+                        .setMessage("Are you sure you want to delete this file?")
+                        .setPositiveButton("Yes", (dialog, which) -> {
+                            if (file.delete()) {
+                                files.remove(position);
+                                notifyDataSetChanged();
+                                Toast.makeText(context, "File deleted", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(context, "Failed to delete file", Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                        .setNegativeButton("No", null)
+                        .show();
+            });
+
+            return convertView;
+        }
     }
 }
