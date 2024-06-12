@@ -39,6 +39,11 @@
             android:name=".FullScreenMediaActivity"
             android:exported="false" />
 
+        <!-- PasscodeActivity -->
+        <activity
+            android:name=".PasscodeActivity"
+            android:exported="false" />
+
         <!-- FileProvider for sharing files securely -->
         <provider
             android:name="androidx.core.content.FileProvider"

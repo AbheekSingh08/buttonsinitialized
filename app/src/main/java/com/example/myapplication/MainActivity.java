@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         // Button to view saved media
         Button viewButton = findViewById(R.id.button_view);
         viewButton.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, SavedMediaActivity.class);
+            Intent intent = new Intent(MainActivity.this, PasscodeActivity.class);
             startActivity(intent);
         });
 
