@@ -25,7 +25,19 @@
         app:layout_constraintStart_toEndOf="@id/thumbnail"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/button_view"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <Button
+        android:id="@+id/button_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="View"
         app:layout_constraintEnd_toStartOf="@+id/button_delete"
+        app:layout_constraintTop_toTopOf="parent"
+        android:backgroundTint="#5fb9c7"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintVertical_bias="0.5" />
 
     <Button
@@ -33,6 +45,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
+        android:backgroundTint="#5fb9c7"
         android:text="Delete"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"

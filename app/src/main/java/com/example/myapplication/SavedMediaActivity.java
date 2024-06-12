@@ -2,12 +2,13 @@ package com.example.myapplication;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -69,10 +71,26 @@ public class SavedMediaActivity extends AppCompatActivity {
             File file = files.get(position);
             TextView fileName = convertView.findViewById(R.id.file_name);
             ImageView thumbnail = convertView.findViewById(R.id.thumbnail);
+            Button viewButton = convertView.findViewById(R.id.button_view);
             Button deleteButton = convertView.findViewById(R.id.button_delete);
 
             fileName.setText(file.getName());
             thumbnail.setImageURI(Uri.fromFile(file));
+
+            viewButton.setOnClickListener(v -> {
+                Intent intent = new Intent(context, FullScreenMediaActivity.class);
+                Uri fileUri = FileProvider.getUriForFile(context, "com.example.myapplication.fileprovider", file);
+                intent.putExtra("mediaUri", fileUri);
+
+                String fileType = getFileType(file);
+                if (fileType.startsWith("image")) {
+                    intent.putExtra("mediaType", "image");
+                } else if (fileType.startsWith("video")) {
+                    intent.putExtra("mediaType", "video");
+                }
+
+                context.startActivity(intent);
+            });
 
             deleteButton.setOnClickListener(v -> {
                 new AlertDialog.Builder(context)
@@ -92,6 +110,12 @@ public class SavedMediaActivity extends AppCompatActivity {
             });
 
             return convertView;
+        }
+
+        // Helper method to determine file type
+        private String getFileType(File file) {
+            String extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
+            return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
         }
     }
 }
