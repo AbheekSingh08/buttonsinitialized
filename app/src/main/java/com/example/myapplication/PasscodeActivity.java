@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class PasscodeActivity extends AppCompatActivity {
 
-    private static final String CORRECT_PASSCODE = "1234"; // Replace with your desired passcode
+    private static final String CORRECT_PASSCODE = "123456"; // Replace with your desired passcode
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
