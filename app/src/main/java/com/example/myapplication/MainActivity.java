@@ -157,8 +157,8 @@ public class MainActivity extends AppCompatActivity {
             byte[] hash = Sha256.hash(mediaBytes);
             String hashString = bytesToHex(hash);
 
-            Log.d("SHA-256 Hash", hashString);
-            Toast.makeText(this, "SHA-256 Hash: " + hashString, Toast.LENGTH_LONG).show();
+            //Log.d("SHA-256 Hash", hashString);
+            //Toast.makeText(this, "SHA-256 Hash: " + hashString, Toast.LENGTH_LONG).show();
 
             inputStream.close();
         } catch (Exception e) {
