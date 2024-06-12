@@ -1,3 +1,4 @@
+// SavedMediaActivity.java
 package com.example.myapplication;
 
 import android.app.AlertDialog;
@@ -19,7 +20,10 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 public class SavedMediaActivity extends AppCompatActivity {
@@ -73,6 +77,7 @@ public class SavedMediaActivity extends AppCompatActivity {
             ImageView thumbnail = convertView.findViewById(R.id.thumbnail);
             Button viewButton = convertView.findViewById(R.id.button_view);
             Button deleteButton = convertView.findViewById(R.id.button_delete);
+            Button hashButton = convertView.findViewById(R.id.button_hash);
 
             fileName.setText(file.getName());
             thumbnail.setImageURI(Uri.fromFile(file));
@@ -109,6 +114,33 @@ public class SavedMediaActivity extends AppCompatActivity {
                         .show();
             });
 
+            hashButton.setOnClickListener(v -> {
+                try {
+                    InputStream inputStream = new FileInputStream(file);
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[1024];
+                    int length;
+                    while ((length = inputStream.read(buffer)) > 0) {
+                        byteArrayOutputStream.write(buffer, 0, length);
+                    }
+                    byte[] fileBytes = byteArrayOutputStream.toByteArray();
+
+                    byte[] hash = Sha256.hash(fileBytes);
+                    String hashString = bytesToHex(hash);
+
+                    new AlertDialog.Builder(context)
+                            .setTitle("SHA-256 Hash")
+                            .setMessage(hashString)
+                            .setPositiveButton("OK", null)
+                            .show();
+
+                    inputStream.close();
+                } catch (Exception e) {
+                    Toast.makeText(context, "Failed to generate hash", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
+                }
+            });
+
             return convertView;
         }
 
@@ -116,6 +148,19 @@ public class SavedMediaActivity extends AppCompatActivity {
         private String getFileType(File file) {
             String extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
             return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+        }
+
+        // Helper method to convert bytes to hex string
+        private String bytesToHex(byte[] bytes) {
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : bytes) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+            return hexString.toString();
         }
     }
 }

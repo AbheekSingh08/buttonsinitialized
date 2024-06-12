@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.Toast;
@@ -21,10 +22,13 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -91,10 +95,12 @@ public class MainActivity extends AppCompatActivity {
             Uri selectedMediaUri = data.getData();
             if (selectedMediaUri != null) {
                 saveMediaToAppDirectory(selectedMediaUri);
+                generateAndDisplayHash(selectedMediaUri);
             }
         } else if (requestCode == CAPTURE_IMAGE_VIDEO_REQUEST && resultCode == RESULT_OK) {
             if (capturedMediaUri != null) {
                 saveMediaToAppDirectory(capturedMediaUri);
+                generateAndDisplayHash(capturedMediaUri);
             }
         }
     }
@@ -135,5 +141,41 @@ public class MainActivity extends AppCompatActivity {
             extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(new File(uri.getPath())).toString());
         }
         return extension;
+    }
+
+    private void generateAndDisplayHash(Uri mediaUri) {
+        try {
+            InputStream inputStream = getContentResolver().openInputStream(mediaUri);
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = inputStream.read(buffer)) > 0) {
+                byteArrayOutputStream.write(buffer, 0, length);
+            }
+            byte[] mediaBytes = byteArrayOutputStream.toByteArray();
+
+            byte[] hash = Sha256.hash(mediaBytes);
+            String hashString = bytesToHex(hash);
+
+            Log.d("SHA-256 Hash", hashString);
+            Toast.makeText(this, "SHA-256 Hash: " + hashString, Toast.LENGTH_LONG).show();
+
+            inputStream.close();
+        } catch (Exception e) {
+            Toast.makeText(this, "Failed to generate hash", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
+    }
+
+    private String bytesToHex(byte[] bytes) {
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : bytes) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString();
     }
 }
