@@ -12,6 +12,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -48,13 +49,17 @@ public class SavedMediaActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String selectedMedia = mediaList.get(position);
                 File mediaFile = new File(appDir, selectedMedia);
-                Uri uri = Uri.fromFile(mediaFile);
+                Uri uri = FileProvider.getUriForFile(SavedMediaActivity.this, "com.example.myapplication.fileprovider", mediaFile);
 
-                Intent intent = new Intent();
-                intent.setAction(Intent.ACTION_VIEW);
+                Intent intent = new Intent(Intent.ACTION_VIEW);
                 String mimeType = getMimeType(uri);
                 intent.setDataAndType(uri, mimeType);
-                startActivity(intent);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                try {
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Toast.makeText(SavedMediaActivity.this, "No suitable app to open this file", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
