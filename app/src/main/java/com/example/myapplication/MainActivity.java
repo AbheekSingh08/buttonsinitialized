@@ -2,6 +2,7 @@ package com.example.myapplication;
 
 import android.Manifest;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -28,6 +29,8 @@ import java.io.OutputStream;
 public class MainActivity extends AppCompatActivity {
 
     private static final int PICK_IMAGE_VIDEO_REQUEST = 1;
+    private static final int CAPTURE_IMAGE_VIDEO_REQUEST = 2;
+    private Uri capturedMediaUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,8 +38,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Request permissions if not already granted
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA}, 1);
         }
 
         EdgeToEdge.enable(this);
@@ -57,12 +61,27 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, SavedMediaActivity.class);
             startActivity(intent);
         });
+
+        // Button to take a photo or video
+        Button takeButton = findViewById(R.id.button_take);
+        takeButton.setOnClickListener(v -> openCamera());
     }
 
     private void openGallery() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         intent.setType("image/* video/*");
         startActivityForResult(intent, PICK_IMAGE_VIDEO_REQUEST);
+    }
+
+    private void openCamera() {
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, "New Media");
+        values.put(MediaStore.Images.Media.DESCRIPTION, "From the Camera");
+        capturedMediaUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, capturedMediaUri);
+        startActivityForResult(intent, CAPTURE_IMAGE_VIDEO_REQUEST);
     }
 
     @Override
@@ -72,6 +91,10 @@ public class MainActivity extends AppCompatActivity {
             Uri selectedMediaUri = data.getData();
             if (selectedMediaUri != null) {
                 saveMediaToAppDirectory(selectedMediaUri);
+            }
+        } else if (requestCode == CAPTURE_IMAGE_VIDEO_REQUEST && resultCode == RESULT_OK) {
+            if (capturedMediaUri != null) {
+                saveMediaToAppDirectory(capturedMediaUri);
             }
         }
     }
