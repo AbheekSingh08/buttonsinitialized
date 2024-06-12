@@ -34,6 +34,11 @@
             android:name=".SavedMediaActivity"
             android:exported="false" />
 
+        <!-- FullScreenMediaActivity -->
+        <activity
+            android:name=".FullScreenMediaActivity"
+            android:exported="false" />
+
         <!-- FileProvider for sharing files securely -->
         <provider
             android:name="androidx.core.content.FileProvider"
