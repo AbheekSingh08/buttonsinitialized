@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "156894040296",
+    "project_id": "loginandregforblanden",
+    "storage_bucket": "loginandregforblanden.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:156894040296:android:3b9176995e98197e1b795d",
+        "android_client_info": {
+          "package_name": "com.example.myapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtZAN6w14o-6JCQUgXc6nBCNGd567D6u4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

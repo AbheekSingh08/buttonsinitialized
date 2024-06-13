@@ -10,7 +10,7 @@
         android:id="@+id/passcode_edit_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Enter Secure Password"
+        android:hint="Enter Secure Pincode"
         android:inputType="numberPassword"
         android:gravity="center"
         app:layout_constraintTop_toTopOf="parent"
