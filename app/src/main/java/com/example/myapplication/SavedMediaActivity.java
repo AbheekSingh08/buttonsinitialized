@@ -46,6 +46,9 @@ public class SavedMediaActivity extends AppCompatActivity {
         adapter = new MediaAdapter(this, mediaFiles);
         listView.setAdapter(adapter);
 
+        Button refreshButton = findViewById(R.id.button_refresh);
+        refreshButton.setOnClickListener(v -> loadMediaFiles());
+
         loadMediaFiles();
     }
 
@@ -61,6 +64,7 @@ public class SavedMediaActivity extends AppCompatActivity {
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
+                        mediaFiles.clear();  // Clear the list before adding new items
                         for (DocumentSnapshot document : task.getResult()) {
                             mediaFiles.add(document.getData());
                         }
