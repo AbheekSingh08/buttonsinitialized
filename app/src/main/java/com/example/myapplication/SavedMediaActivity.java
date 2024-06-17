@@ -32,6 +32,7 @@ import java.util.Map;
 public class SavedMediaActivity extends AppCompatActivity {
 
     private ListView listView;
+    private TextView emptyDirectoryMessage;
     private List<Map<String, Object>> mediaFiles;
     private MediaAdapter adapter;
 
@@ -41,6 +42,7 @@ public class SavedMediaActivity extends AppCompatActivity {
         setContentView(R.layout.activity_saved_media);
 
         listView = findViewById(R.id.listView);
+        emptyDirectoryMessage = findViewById(R.id.empty_directory_message);
         mediaFiles = new ArrayList<>();
 
         adapter = new MediaAdapter(this, mediaFiles);
@@ -69,6 +71,13 @@ public class SavedMediaActivity extends AppCompatActivity {
                             mediaFiles.add(document.getData());
                         }
                         adapter.notifyDataSetChanged();
+
+                        // Show or hide the empty directory message
+                        if (mediaFiles.isEmpty()) {
+                            emptyDirectoryMessage.setVisibility(View.VISIBLE);
+                        } else {
+                            emptyDirectoryMessage.setVisibility(View.GONE);
+                        }
                     } else {
                         Toast.makeText(this, "Failed to load media files", Toast.LENGTH_SHORT).show();
                     }
@@ -142,6 +151,13 @@ public class SavedMediaActivity extends AppCompatActivity {
                                                                         files.remove(position);
                                                                         notifyDataSetChanged();
                                                                         Toast.makeText(context, "File deleted", Toast.LENGTH_SHORT).show();
+
+                                                                        // Show or hide the empty directory message
+                                                                        if (files.isEmpty()) {
+                                                                            emptyDirectoryMessage.setVisibility(View.VISIBLE);
+                                                                        } else {
+                                                                            emptyDirectoryMessage.setVisibility(View.GONE);
+                                                                        }
                                                                     })
                                                                     .addOnFailureListener(e -> Toast.makeText(context, "Failed to delete metadata", Toast.LENGTH_SHORT).show());
                                                         }

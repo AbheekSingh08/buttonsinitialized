@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.example.myapplication" />
-                  <option name="mobileSdkAppId" value="1:156894040296:android:3b9176995e98197e1b795d" />
-                  <option name="projectId" value="loginandregforblanden" />
-                  <option name="projectNumber" value="156894040296" />
+                  <option name="mobileSdkAppId" value="1:293245531607:android:3f8cb34a91d23a2382c792" />
+                  <option name="projectId" value="logbaseretr" />
+                  <option name="projectNumber" value="293245531607" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

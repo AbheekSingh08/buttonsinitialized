@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.myapplication"
-        minSdk = 29
+        minSdk = 27
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -48,6 +48,7 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-analytics")
 
     // Glide for image loading
     implementation("com.github.bumptech.glide:glide:4.12.0")

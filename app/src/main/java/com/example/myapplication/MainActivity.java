@@ -26,10 +26,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
@@ -160,16 +157,23 @@ public class MainActivity extends AppCompatActivity {
             }
             byte[] mediaBytes = byteArrayOutputStream.toByteArray();
 
-            byte[] hash = Sha256.hash(mediaBytes);
+            byte[] hash = generateSha256Hash(mediaBytes);
             String hashString = bytesToHex(hash);
-
-            // Log.d("SHA-256 Hash", hashString);
-            // Toast.makeText(this, "SHA-256 Hash: " + hashString, Toast.LENGTH_LONG).show();
 
             inputStream.close();
         } catch (Exception e) {
             Toast.makeText(this, "Failed to generate hash", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
+        }
+    }
+
+    private byte[] generateSha256Hash(byte[] data) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            return digest.digest(data);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
