@@ -1,9 +1,13 @@
 package com.example.myapplication;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,24 +20,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
-import com.bumptech.glide.Glide;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
-
-import java.security.MessageDigest;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 public class SavedMediaActivity extends AppCompatActivity {
-
     private ListView listView;
-    private TextView emptyDirectoryMessage;
-    private List<Map<String, Object>> mediaFiles;
+    private ArrayList<File> mediaFiles;
     private MediaAdapter adapter;
 
     @Override
@@ -41,55 +41,33 @@ public class SavedMediaActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_saved_media);
 
-        listView = findViewById(R.id.listView);
-        emptyDirectoryMessage = findViewById(R.id.empty_directory_message);
-        mediaFiles = new ArrayList<>();
-
-        adapter = new MediaAdapter(this, mediaFiles);
-        listView.setAdapter(adapter);
-
-        Button refreshButton = findViewById(R.id.button_refresh);
-        refreshButton.setOnClickListener(v -> loadMediaFiles());
-
-        loadMediaFiles();
-    }
-
-    private void loadMediaFiles() {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) {
-            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
-            return;
+        // Request write permission if not already granted
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         }
 
-        FirebaseFirestore.getInstance().collection("users").document(user.getUid())
-                .collection("mediaFiles")
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        mediaFiles.clear();  // Clear the list before adding new items
-                        for (DocumentSnapshot document : task.getResult()) {
-                            mediaFiles.add(document.getData());
-                        }
-                        adapter.notifyDataSetChanged();
-
-                        // Show or hide the empty directory message
-                        if (mediaFiles.isEmpty()) {
-                            emptyDirectoryMessage.setVisibility(View.VISIBLE);
-                        } else {
-                            emptyDirectoryMessage.setVisibility(View.GONE);
-                        }
-                    } else {
-                        Toast.makeText(this, "Failed to load media files", Toast.LENGTH_SHORT).show();
-                    }
-                });
+        listView = findViewById(R.id.listView);
+        mediaFiles = getSavedMediaFiles();
+        adapter = new MediaAdapter(this, mediaFiles);
+        listView.setAdapter(adapter);
     }
 
-    private class MediaAdapter extends ArrayAdapter<Map<String, Object>> {
+    private ArrayList<File> getSavedMediaFiles() {
+        ArrayList<File> files = new ArrayList<>();
+        File appDir = new File(getFilesDir(), "saved_media");
+        if (appDir.exists() && appDir.isDirectory()) {
+            for (File file : appDir.listFiles()) {
+                files.add(file);
+            }
+        }
+        return files;
+    }
 
+    private class MediaAdapter extends ArrayAdapter<File> {
         private Context context;
-        private List<Map<String, Object>> files;
+        private ArrayList<File> files;
 
-        public MediaAdapter(Context context, List<Map<String, Object>> files) {
+        public MediaAdapter(Context context, ArrayList<File> files) {
             super(context, 0, files);
             this.context = context;
             this.files = files;
@@ -100,109 +78,111 @@ public class SavedMediaActivity extends AppCompatActivity {
             if (convertView == null) {
                 convertView = LayoutInflater.from(context).inflate(R.layout.media_item, parent, false);
             }
-
-            Map<String, Object> fileData = files.get(position);
-            String fileName = (String) fileData.get("fileName");
-            String fileUrl = (String) fileData.get("fileUrl");
-
-            TextView fileNameTextView = convertView.findViewById(R.id.file_name);
-            ImageView thumbnailImageView = convertView.findViewById(R.id.thumbnail);
+            File file = files.get(position);
+            TextView fileName = convertView.findViewById(R.id.file_name);
+            ImageView thumbnail = convertView.findViewById(R.id.thumbnail);
             Button viewButton = convertView.findViewById(R.id.button_view);
             Button deleteButton = convertView.findViewById(R.id.button_delete);
             Button hashButton = convertView.findViewById(R.id.button_hash);
 
-            fileNameTextView.setText(fileName);
+            fileName.setText(file.getName());
+            thumbnail.setImageURI(Uri.fromFile(file));
 
-            // Load thumbnail image using Glide
-            Glide.with(context).load(fileUrl).into(thumbnailImageView);
-
-            viewButton.setOnClickListener(v -> {
-                Intent intent = new Intent(context, FullScreenMediaActivity.class);
-                intent.putExtra("mediaUrl", fileUrl);
-
-                String fileType = getFileType(fileName);
-                if (fileType.startsWith("image")) {
-                    intent.putExtra("mediaType", "image");
-                } else if (fileType.startsWith("video")) {
-                    intent.putExtra("mediaType", "video");
-                }
-
-                context.startActivity(intent);
-            });
+            // Handle display and viewing of different file types
+            if (file.getName().endsWith(".sha.txt")) {
+                // If the file is a hash file, hide the thumbnail
+                thumbnail.setVisibility(View.GONE);
+                viewButton.setText("View Hash");
+                viewButton.setOnClickListener(v -> {
+                    Intent intent = new Intent(context, ViewHashActivity.class);
+                    Uri fileUri = FileProvider.getUriForFile(context, "com.example.myapplication.fileprovider", file);
+                    intent.putExtra("hashFileUri", fileUri.toString());
+                    context.startActivity(intent);
+                });
+            } else {
+                thumbnail.setVisibility(View.VISIBLE);
+                viewButton.setText("View");
+                viewButton.setOnClickListener(v -> {
+                    Intent intent = new Intent(context, FullScreenMediaActivity.class);
+                    Uri fileUri = FileProvider.getUriForFile(context, "com.example.myapplication.fileprovider", file);
+                    intent.putExtra("mediaUrl", fileUri.toString());
+                    String fileType = getFileType(file);
+                    if (fileType.startsWith("image")) {
+                        intent.putExtra("mediaType", "image");
+                    } else if (fileType.startsWith("video")) {
+                        intent.putExtra("mediaType", "video");
+                    }
+                    context.startActivity(intent);
+                });
+            }
 
             deleteButton.setOnClickListener(v -> {
                 new AlertDialog.Builder(context)
                         .setTitle("Delete Confirmation")
                         .setMessage("Are you sure you want to delete this file?")
                         .setPositiveButton("Yes", (dialog, which) -> {
-                            FirebaseStorage.getInstance().getReferenceFromUrl(fileUrl)
-                                    .delete()
-                                    .addOnSuccessListener(aVoid -> {
-                                        FirebaseFirestore.getInstance().collection("users")
-                                                .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                                .collection("mediaFiles")
-                                                .whereEqualTo("fileUrl", fileUrl)
-                                                .get()
-                                                .addOnCompleteListener(task -> {
-                                                    if (task.isSuccessful() && !task.getResult().isEmpty()) {
-                                                        for (DocumentSnapshot document : task.getResult()) {
-                                                            document.getReference().delete()
-                                                                    .addOnSuccessListener(aVoid1 -> {
-                                                                        files.remove(position);
-                                                                        notifyDataSetChanged();
-                                                                        Toast.makeText(context, "File deleted", Toast.LENGTH_SHORT).show();
-
-                                                                        // Show or hide the empty directory message
-                                                                        if (files.isEmpty()) {
-                                                                            emptyDirectoryMessage.setVisibility(View.VISIBLE);
-                                                                        } else {
-                                                                            emptyDirectoryMessage.setVisibility(View.GONE);
-                                                                        }
-                                                                    })
-                                                                    .addOnFailureListener(e -> Toast.makeText(context, "Failed to delete metadata", Toast.LENGTH_SHORT).show());
-                                                        }
-                                                    }
-                                                })
-                                                .addOnFailureListener(e -> Toast.makeText(context, "Failed to delete metadata", Toast.LENGTH_SHORT).show());
-                                    })
-                                    .addOnFailureListener(e -> Toast.makeText(context, "Failed to delete file", Toast.LENGTH_SHORT).show());
+                            if (file.delete()) {
+                                files.remove(position);
+                                notifyDataSetChanged();
+                                Toast.makeText(context, "File deleted", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(context, "Failed to delete file", Toast.LENGTH_SHORT).show();
+                            }
                         })
                         .setNegativeButton("No", null)
                         .show();
             });
 
             hashButton.setOnClickListener(v -> {
-                FirebaseStorage.getInstance().getReferenceFromUrl(fileUrl)
-                        .getBytes(Long.MAX_VALUE)
-                        .addOnSuccessListener(bytes -> {
-                            byte[] hash = generateSha256Hash(bytes);
-                            String hashString = bytesToHex(hash);
+                try {
+                    InputStream inputStream = new FileInputStream(file);
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[1024];
+                    int length;
+                    while ((length = inputStream.read(buffer)) > 0) {
+                        byteArrayOutputStream.write(buffer, 0, length);
+                    }
+                    byte[] fileBytes = byteArrayOutputStream.toByteArray();
 
-                            new AlertDialog.Builder(context)
-                                    .setTitle("SHA-256 Hash")
-                                    .setMessage(hashString)
-                                    .setPositiveButton("OK", null)
-                                    .show();
-                        })
-                        .addOnFailureListener(e -> Toast.makeText(context, "Failed to generate hash", Toast.LENGTH_SHORT).show());
+                    byte[] hash = Sha256.hash(fileBytes);
+                    String hashString = bytesToHex(hash);
+
+                    new AlertDialog.Builder(context)
+                            .setTitle("SHA-256 Hash")
+                            .setMessage(hashString)
+                            .setPositiveButton("OK", null)
+                            .show();
+
+                    // Save hash to a text file in Downloads directory
+                    File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                    if (!downloadsDir.exists()) {
+                        downloadsDir.mkdirs();
+                    }
+                    File hashFile = new File(downloadsDir, file.getName() + ".sha.txt");
+                    FileOutputStream fos = new FileOutputStream(hashFile);
+                    fos.write(hashString.getBytes());
+                    fos.close();
+
+                    // Add the hash file to the list of media files and update the adapter
+                    files.add(hashFile);
+                    notifyDataSetChanged();
+
+                    // Notify user of the download
+                    Toast.makeText(context, "Hash file saved to Downloads: " + hashFile.getName(), Toast.LENGTH_SHORT).show();
+
+                    inputStream.close();
+                } catch (Exception e) {
+                    Toast.makeText(context, "Failed to generate hash", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
+                }
             });
 
             return convertView;
         }
 
-        private byte[] generateSha256Hash(byte[] data) {
-            try {
-                MessageDigest digest = MessageDigest.getInstance("SHA-256");
-                return digest.digest(data);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-        }
-
         // Helper method to determine file type
-        private String getFileType(String fileName) {
-            String extension = MimeTypeMap.getFileExtensionFromUrl(fileName);
+        private String getFileType(File file) {
+            String extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
             return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
         }
 

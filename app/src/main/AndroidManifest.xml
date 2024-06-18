@@ -20,20 +20,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication">
 
-        <!-- LoginActivity -->
+        <!-- MainActivity -->
         <activity
-            android:name=".LoginActivity"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- MainActivity -->
-        <activity
-            android:name=".MainActivity"
-            android:exported="true" />
 
         <!-- SavedMediaActivity -->
         <activity
@@ -48,6 +43,11 @@
         <!-- PasscodeActivity -->
         <activity
             android:name=".PasscodeActivity"
+            android:exported="false" />
+
+        <!-- ViewHashActivity -->
+        <activity
+            android:name=".ViewHashActivity"
             android:exported="false" />
 
         <!-- FileProvider for sharing files securely -->

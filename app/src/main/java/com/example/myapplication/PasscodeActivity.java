@@ -8,7 +8,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-public class PasscodeActivity extends AppCompatActivity {
+public class PasscodeActivity extends AppCompatActivity { //irrelevant now
 
     private static final String CORRECT_PASSCODE = "123456"; // Replace with your desired passcode
 
