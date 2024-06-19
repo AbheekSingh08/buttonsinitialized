@@ -12,6 +12,7 @@ import android.util.Log;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.Toast;
+
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,6 +21,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -65,6 +67,13 @@ public class MainActivity extends AppCompatActivity {
         // Button to take a photo or video
         Button takeButton = findViewById(R.id.button_take);
         takeButton.setOnClickListener(v -> openCamera());
+
+        // Button to open Watch Directory
+        Button watchDirectoryButton = findViewById(R.id.button_watch_directory);
+        watchDirectoryButton.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, WatchDirectoryActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void openGallery() {
@@ -89,21 +98,21 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == PICK_IMAGE_VIDEO_REQUEST && resultCode == RESULT_OK && data != null) {
             Uri selectedMediaUri = data.getData();
             if (selectedMediaUri != null) {
-                saveMediaToAppDirectory(selectedMediaUri);
+                saveMediaToWatchDirectory(selectedMediaUri);
                 generateAndDisplayHash(selectedMediaUri);
             }
         } else if (requestCode == CAPTURE_IMAGE_VIDEO_REQUEST && resultCode == RESULT_OK) {
             if (capturedMediaUri != null) {
-                saveMediaToAppDirectory(capturedMediaUri);
+                saveMediaToWatchDirectory(capturedMediaUri);
                 generateAndDisplayHash(capturedMediaUri);
             }
         }
     }
 
-    private void saveMediaToAppDirectory(Uri mediaUri) {
+    private void saveMediaToWatchDirectory(Uri mediaUri) {
         try {
             InputStream inputStream = getContentResolver().openInputStream(mediaUri);
-            File appDir = new File(getFilesDir(), "saved_media");
+            File appDir = new File(getFilesDir(), "watch_directory");
             if (!appDir.exists()) {
                 appDir.mkdirs();
             }

@@ -55,7 +55,7 @@
         app:layout_constraintTop_toBottomOf="@id/button_upload" />
 
     <Button
-        android:id="@+id/button_view"
+        android:id="@+id/button_watch_directory"
         android:layout_width="466dp"
         android:layout_height="72dp"
         android:layout_marginHorizontal="16dp"

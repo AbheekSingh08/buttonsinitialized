@@ -23,25 +23,25 @@
     <Button
         android:id="@+id/button_view"
         android:layout_width="wrap_content"
-        android:backgroundTint="#5FB9C7"
         android:layout_height="wrap_content"
         android:text="View"
-        android:layout_marginEnd="8dp" />
+        android:layout_marginEnd="8dp"
+        android:backgroundTint="#5FB9C7"/>
 
     <Button
         android:id="@+id/button_delete"
         android:layout_width="wrap_content"
-        android:backgroundTint="#5FB9C7"
         android:layout_height="wrap_content"
         android:text="Delete"
+        android:backgroundTint="#5FB9C7"
         android:layout_marginEnd="8dp" />
 
     <Button
-        android:id="@+id/button_hash"
+        android:id="@+id/button_transmit"
         android:layout_width="wrap_content"
-        android:backgroundTint="#5FB9C7"
         android:layout_height="wrap_content"
-        android:text="Hash" />
+        android:text="Transmit"
+        android:backgroundTint="#5FB9C7"
+        android:layout_marginEnd="8dp" />
 
 </LinearLayout>
-

@@ -28,9 +28,12 @@ public class ViewHashActivity extends AppCompatActivity {
             try {
                 Uri fileUri = Uri.parse(hashFileUri);
                 File file = new File(fileUri.getPath());
+
+                // Check both internal and external storage paths
                 if (!file.exists()) {
-                    file = new File(fileUri.getPath().replace("/external_files/", Environment.getExternalStorageDirectory() + "/"));
+                    file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), file.getName());
                 }
+
                 if (file.exists()) {
                     BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
                     StringBuilder stringBuilder = new StringBuilder();

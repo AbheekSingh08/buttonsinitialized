@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,14 +23,13 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
-public class SavedMediaActivity extends AppCompatActivity {
+public class WatchDirectoryActivity extends AppCompatActivity {
     private ListView listView;
     private ArrayList<File> mediaFiles;
     private MediaAdapter adapter;
@@ -47,14 +45,14 @@ public class SavedMediaActivity extends AppCompatActivity {
         }
 
         listView = findViewById(R.id.listView);
-        mediaFiles = getSavedMediaFiles();
+        mediaFiles = getWatchDirectoryFiles();
         adapter = new MediaAdapter(this, mediaFiles);
         listView.setAdapter(adapter);
     }
 
-    private ArrayList<File> getSavedMediaFiles() {
+    private ArrayList<File> getWatchDirectoryFiles() {
         ArrayList<File> files = new ArrayList<>();
-        File appDir = new File(getFilesDir(), "saved_media");
+        File appDir = new File(getFilesDir(), "watch_directory");
         if (appDir.exists() && appDir.isDirectory()) {
             for (File file : appDir.listFiles()) {
                 files.add(file);
@@ -76,14 +74,14 @@ public class SavedMediaActivity extends AppCompatActivity {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             if (convertView == null) {
-                convertView = LayoutInflater.from(context).inflate(R.layout.media_item, parent, false);
+                convertView = LayoutInflater.from(context).inflate(R.layout.media_item_watch_directory, parent, false);
             }
             File file = files.get(position);
             TextView fileName = convertView.findViewById(R.id.file_name);
             ImageView thumbnail = convertView.findViewById(R.id.thumbnail);
             Button viewButton = convertView.findViewById(R.id.button_view);
             Button deleteButton = convertView.findViewById(R.id.button_delete);
-            Button hashButton = convertView.findViewById(R.id.button_hash);
+            Button transmitButton = convertView.findViewById(R.id.button_transmit);
 
             fileName.setText(file.getName());
             thumbnail.setImageURI(Uri.fromFile(file));
@@ -131,49 +129,19 @@ public class SavedMediaActivity extends AppCompatActivity {
                         .show();
             });
 
-            hashButton.setOnClickListener(v -> {
+            transmitButton.setOnClickListener(v -> {
                 try {
-                    InputStream inputStream = new FileInputStream(file);
-                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                    byte[] buffer = new byte[1024];
-                    int length;
-                    while ((length = inputStream.read(buffer)) > 0) {
-                        byteArrayOutputStream.write(buffer, 0, length);
+                    File transmittedDir = new File(getFilesDir(), "saved_media");
+                    if (!transmittedDir.exists()) {
+                        transmittedDir.mkdirs();
                     }
-                    byte[] fileBytes = byteArrayOutputStream.toByteArray();
-
-                    byte[] hash = Sha256.hash(fileBytes);
-                    String hashString = bytesToHex(hash);
-
-                    new AlertDialog.Builder(context)
-                            .setTitle("SHA-256 Hash")
-                            .setMessage(hashString)
-                            .setPositiveButton("OK", null)
-                            .show();
-
-                    // Save hash to a text file in Downloads directory
-                    File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                    if (!downloadsDir.exists()) {
-                        downloadsDir.mkdirs();
-                    }
-                    File hashFile = new File(downloadsDir, file.getName() + ".sha.txt");
-                    FileOutputStream fos = new FileOutputStream(hashFile);
-                    fos.write(hashString.getBytes());
-                    fos.close();
-
-                    // Create URI for the hash file
-                    Uri hashFileUri = FileProvider.getUriForFile(context, "com.example.myapplication.fileprovider", hashFile);
-
-                    // Add the hash file to the list of media files and update the adapter
-                    files.add(hashFile);
+                    File transmittedFile = new File(transmittedDir, file.getName());
+                    copyFile(file, transmittedFile);
+                    files.remove(position);
                     notifyDataSetChanged();
-
-                    // Notify user of the download
-                    Toast.makeText(context, "Hash file saved to Downloads: " + hashFile.getName(), Toast.LENGTH_SHORT).show();
-
-                    inputStream.close();
-                } catch (Exception e) {
-                    Toast.makeText(context, "Failed to generate hash", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "File transmitted", Toast.LENGTH_SHORT).show();
+                } catch (IOException e) {
+                    Toast.makeText(context, "Failed to transmit file", Toast.LENGTH_SHORT).show();
                     e.printStackTrace();
                 }
             });
@@ -186,16 +154,14 @@ public class SavedMediaActivity extends AppCompatActivity {
             return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
         }
 
-        private String bytesToHex(byte[] bytes) {
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : bytes) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) {
-                    hexString.append('0');
+        private void copyFile(File src, File dst) throws IOException {
+            try (FileInputStream in = new FileInputStream(src); FileOutputStream out = new FileOutputStream(dst)) {
+                byte[] buffer = new byte[1024];
+                int length;
+                while ((length = in.read(buffer)) > 0) {
+                    out.write(buffer, 0, length);
                 }
-                hexString.append(hex);
             }
-            return hexString.toString();
         }
     }
 }
