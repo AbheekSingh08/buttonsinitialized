@@ -20,6 +20,15 @@
         android:text="File Name"
         android:textSize="16sp" />
 
+    <TextView
+        android:id="@+id/upload_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="Upload Time"
+        android:textSize="12sp"
+        android:textColor="#888888" />
+
     <Button
         android:id="@+id/button_view"
         android:layout_width="wrap_content"
