@@ -38,9 +38,9 @@ public class ActivityLogAdapter extends ArrayAdapter<String> {
 
         // Highlight the text based on the action
         if (log.contains("Added:")) {
-            logTextView.setTextColor(Color.parseColor("#48d809"));
+            logTextView.setTextColor(Color.GREEN);
         } else if (log.contains("Deleted:")) {
-            logTextView.setTextColor(Color.parseColor("#D82525"));
+            logTextView.setTextColor(Color.RED);
         } else {
             logTextView.setTextColor(Color.BLACK);
         }

@@ -1,3 +1,13 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">MyApplication</string>
+    <string-array name="filters_array">
+        <item>Filters</item>
+        <item>Added</item>
+        <item>Deleted</item>
+        <item>Transmitted</item>
+        <item>Last Five Minutes</item>
+        <item>Image/Video</item>
+        <item>Zip File</item>
+        <item>Other File</item>
+    </string-array>
 </resources>

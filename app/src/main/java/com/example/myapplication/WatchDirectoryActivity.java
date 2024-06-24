@@ -43,6 +43,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
 
@@ -279,8 +281,10 @@ public class WatchDirectoryActivity extends AppCompatActivity {
         ArrayList<File> files = new ArrayList<>();
         File appDir = new File(getFilesDir(), "watch_directory");
         if (appDir.exists() && appDir.isDirectory()) {
-            for (File file : appDir.listFiles()) {
-                files.add(file);
+            File[] fileArray = appDir.listFiles();
+            if (fileArray != null) {
+                Arrays.sort(fileArray, (f1, f2) -> Long.compare(f2.lastModified(), f1.lastModified()));
+                files.addAll(Arrays.asList(fileArray));
             }
         }
         return files;
