@@ -13,27 +13,30 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_begin="350dp" />
+        app:layout_constraintGuide_begin="80dp" />
 
     <TextView
         android:id="@+id/title"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:text="Send your Photos and Videos Securely"
+        android:layout_marginTop="4dp"
+        android:text="Send Items Securely"
         android:textColor="#000000"
-        android:textSize="28sp"
+        android:textSize="24sp"
         android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@id/guideline"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/guideline"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintHorizontal_bias="0.5" />
+
 
     <Button
         android:id="@+id/button_upload"
-        android:layout_width="466dp"
-        android:layout_height="72dp"
+        android:layout_width="392dp"
+        android:layout_height="54dp"
         android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="24dp"
         android:backgroundTint="#000000"
         android:text="Upload a Photo or Video"
         android:textColor="#FFFFFF"
@@ -43,10 +46,10 @@
 
     <Button
         android:id="@+id/button_take"
-        android:layout_width="466dp"
-        android:layout_height="72dp"
+        android:layout_width="392dp"
+        android:layout_height="54dp"
         android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="12dp"
         android:backgroundTint="#000000"
         android:text="Take a Photo or Video"
         android:textColor="#FFFFFF"
@@ -56,8 +59,8 @@
 
     <Button
         android:id="@+id/button_watch_directory"
-        android:layout_width="466dp"
-        android:layout_height="72dp"
+        android:layout_width="392dp"
+        android:layout_height="54dp"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="12dp"
         android:backgroundTint="#000000"
@@ -71,8 +74,8 @@
         android:id="@+id/unread_watch_directory_count"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="24dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="12dp"
         android:background="@drawable/red_circle"
         android:gravity="center"
         android:text="0"
@@ -83,8 +86,8 @@
 
     <Button
         android:id="@+id/button_trans"
-        android:layout_width="466dp"
-        android:layout_height="72dp"
+        android:layout_width="392dp"
+        android:layout_height="54dp"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="12dp"
         android:backgroundTint="#000000"
@@ -98,8 +101,8 @@
         android:id="@+id/unread_transmitted_files_count"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="24dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="16dp"
         android:background="@drawable/red_circle"
         android:gravity="center"
         android:text="0"

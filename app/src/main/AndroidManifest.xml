@@ -55,6 +55,17 @@
             android:name=".ViewHashActivity"
             android:exported="false" />
 
+        <!-- PdfViewActivity -->
+        <activity
+            android:name=".PdfViewActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ZipViewActivity"
+            android:exported="false" />
+        <activity
+            android:name=".WatchActivityLogActivity"
+            android:exported="false" />
+
         <!-- FileProvider for sharing files securely -->
         <provider
             android:name="androidx.core.content.FileProvider"

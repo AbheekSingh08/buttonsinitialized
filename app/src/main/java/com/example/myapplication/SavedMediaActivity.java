@@ -86,11 +86,19 @@ public class SavedMediaActivity extends AppCompatActivity {
             Button hashButton = convertView.findViewById(R.id.button_hash);
 
             fileName.setText(file.getName());
-            thumbnail.setImageURI(Uri.fromFile(file));
+
+            String fileType = getFileType(file);
+            if ("application/pdf".equals(fileType)) {
+                thumbnail.setImageResource(R.drawable.ic_other); // Set the icon for PDF files
+            } else if ("application/zip".equals(fileType)) {
+                thumbnail.setImageResource(R.drawable.ic_folder); // Set the folder icon
+            } else {
+                thumbnail.setImageURI(Uri.fromFile(file));
+            }
 
             if (file.getName().endsWith(".sha.txt")) {
                 thumbnail.setVisibility(View.GONE);
-                viewButton.setText("View Hash");
+                viewButton.setText("View txt");
                 viewButton.setOnClickListener(v -> {
                     Intent intent = new Intent(context, ViewHashActivity.class);
                     Uri fileUri = FileProvider.getUriForFile(context, "com.example.myapplication.fileprovider", file);
@@ -101,14 +109,22 @@ public class SavedMediaActivity extends AppCompatActivity {
                 thumbnail.setVisibility(View.VISIBLE);
                 viewButton.setText("View");
                 viewButton.setOnClickListener(v -> {
-                    Intent intent = new Intent(context, FullScreenMediaActivity.class);
+                    Intent intent;
                     Uri fileUri = FileProvider.getUriForFile(context, "com.example.myapplication.fileprovider", file);
-                    intent.putExtra("mediaUrl", fileUri.toString());
-                    String fileType = getFileType(file);
-                    if (fileType.startsWith("image")) {
-                        intent.putExtra("mediaType", "image");
-                    } else if (fileType.startsWith("video")) {
-                        intent.putExtra("mediaType", "video");
+                    if ("application/pdf".equals(fileType)) {
+                        intent = new Intent(context, PdfViewActivity.class);
+                        intent.putExtra("pdfUri", fileUri.toString());
+                    } else if ("application/zip".equals(fileType)) {
+                        intent = new Intent(context, ZipViewActivity.class);
+                        intent.putExtra("zipFilePath", file.getAbsolutePath());
+                    } else {
+                        intent = new Intent(context, FullScreenMediaActivity.class);
+                        intent.putExtra("mediaUrl", fileUri.toString());
+                        if (fileType.startsWith("image")) {
+                            intent.putExtra("mediaType", "image");
+                        } else if (fileType.startsWith("video")) {
+                            intent.putExtra("mediaType", "video");
+                        }
                     }
                     context.startActivity(intent);
                 });

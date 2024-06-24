@@ -1,12 +1,10 @@
 package com.example.myapplication;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -43,21 +41,12 @@ public class MainActivity extends AppCompatActivity {
     private static final String PREFS_NAME = "MyPrefs";
     private static final String TRANSMITTED_COUNT_KEY = "transmitted_count";
     private static final String UPLOAD_TIME_KEY_PREFIX = "upload_time_";
-    private static final String ACTION_UPDATE_TRANSMITTED_COUNT = "com.example.myapplication.UPDATE_TRANSMITTED_COUNT";
 
     private Uri capturedMediaUri;
     private TextView unreadWatchDirectoryCount;
     private TextView unreadTransmittedFilesCount;
     private int watchDirectoryUnreadCount = 0;
     private int transmittedFilesUnreadCount = 0;
-
-    private BroadcastReceiver transmittedCountReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            transmittedFilesUnreadCount++;
-            updateUnreadCounts();
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,9 +72,6 @@ public class MainActivity extends AppCompatActivity {
         // Load the transmitted files count from SharedPreferences
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         transmittedFilesUnreadCount = prefs.getInt(TRANSMITTED_COUNT_KEY, 0);
-
-        // Register BroadcastReceiver
-        registerReceiver(transmittedCountReceiver, new IntentFilter(ACTION_UPDATE_TRANSMITTED_COUNT));
 
         // Button to open the gallery and select media
         Button uploadButton = findViewById(R.id.button_upload);
@@ -119,13 +105,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize unread counts
         updateUnreadCounts();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        // Unregister BroadcastReceiver
-        unregisterReceiver(transmittedCountReceiver);
     }
 
     private void openGallery() {
@@ -188,11 +167,6 @@ public class MainActivity extends AppCompatActivity {
             editor.putString(UPLOAD_TIME_KEY_PREFIX + mediaFile.getName(), currentTime);
             editor.apply();
 
-            // Send broadcast to update the list in WatchDirectoryActivity
-            Intent broadcastIntent = new Intent(WatchDirectoryActivity.ACTION_UPDATE_WATCH_DIRECTORY);
-            broadcastIntent.putExtra("newFile", mediaFile.getAbsolutePath());
-            sendBroadcast(broadcastIntent);
-
             Toast.makeText(this, "Media saved successfully to Watch Directory", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             Toast.makeText(this, "Failed to save media", Toast.LENGTH_SHORT).show();
@@ -226,8 +200,6 @@ public class MainActivity extends AppCompatActivity {
             String hashString = bytesToHex(hash);
 
             Log.d("SHA-256 Hash", hashString);
-            Toast.makeText(this, "SHA-256 Hash: " + hashString, Toast.LENGTH_LONG).show();
-
             inputStream.close();
         } catch (Exception e) {
             Toast.makeText(this, "Failed to generate hash", Toast.LENGTH_SHORT).show();
